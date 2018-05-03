@@ -38,14 +38,6 @@
  * Credits:Special thanks to @dietpepsi for adding this problem and creating
  * all test cases.
  */
-#include <algorithm>
-#include <cstdio>
-#include <cstring>
-#include <vector>
-
-using namespace std;
-
-typedef long long LL;
 
 /*
     SOLUTION EXPLANATION
