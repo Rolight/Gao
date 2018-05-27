@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bitset>
 #include <cstdio>
 #include <cstring>
 #include <map>
@@ -8,16 +9,16 @@
 using namespace std;
 
 const int maxn = 16;
+const int N = maxn * maxn;
 int L[maxn][maxn], eid[maxn][maxn];
 int n;
 vector<pair<int, int> > edges;
-unordered_map<int, unordered_map<int, int> > f;
 
 vector<int> elen;
-bool check(int choose_mask) {
+bool check(bitset<N> choose_mask) {
     elen.clear();
     for (int i = 0; i < edges.size(); i++) {
-        if (choose_mask & (1 << i)) {
+        if (choose_mask[i]) {
             elen.push_back(L[edges[i].first][edges[i].second]);
         }
     }
@@ -30,35 +31,34 @@ bool check(int choose_mask) {
     return lsum > elen.back();
 }
 
-int dfs(int choose_mask, int remain_mask) {
+int dfs(bitset<N> choose_mask, bitset<N> remain_mask) {
     int ret = 0;
     // printf("%d %d\n", choose_mask, remain_mask);
-    if (f.count(choose_mask) && f[choose_mask].count(remain_mask)) {
-        return f[choose_mask][remain_mask];
-    }
     if (check(choose_mask)) ++ret;
-    if (remain_mask == 0) return f[choose_mask][remain_mask] = ret;
+    if (remain_mask == 0) return ret;
     int last = -1;
     for (int i = 0; i < edges.size(); i++) {
-        if ((1 << i) & choose_mask) last = i;
+        if (choose_mask[i]) last = i;
     }
     for (int i = last + 1; i < edges.size(); i++) {
-        if (remain_mask & (1 << i)) {
-            int n_choose_mask = choose_mask | (1 << i);
+        if (remain_mask[i]) {
+            bitset<N> n_choose_mask = choose_mask;
+            n_choose_mask.set(i);
             int u = edges[i].first, v = edges[i].second;
-            int n_remain_mask = remain_mask ^ (1 << i);
+            bitset<N> n_remain_mask = remain_mask;
+            n_remain_mask.set(i, 0);
             for (int j = 1; j <= n; j++) {
-                if (L[u][j] != 0 && (n_remain_mask & (1 << eid[u][j]))) {
-                    n_remain_mask ^= (1 << eid[u][j]);
+                if (L[u][j] != 0 && (n_remain_mask[eid[u][j]])) {
+                    n_remain_mask.flip(eid[u][j]);
                 }
-                if (L[v][j] != 0 && (n_remain_mask & (1 << eid[v][j]))) {
-                    n_remain_mask ^= (1 << eid[v][j]);
+                if (L[v][j] != 0 && (n_remain_mask[eid[v][j]])) {
+                    n_remain_mask.flip(eid[v][j]);
                 }
             }
             ret += dfs(n_choose_mask, n_remain_mask);
         }
     }
-    return f[choose_mask][remain_mask] = ret;
+    return ret;
 }
 
 int main() {
@@ -77,9 +77,11 @@ int main() {
                 }
             }
         }
-        f.clear();
         // printf("edge size = %d\n", (int)edges.size());
-        int ans = dfs(0, (1 << edges.size()) - 1);
+        bitset<N> choose_mask, remain_mask;
+        remain_mask.flip();
+        int ans = dfs(choose_mask, remain_mask);
+        fprintf(stderr, "Case #%d: %d\n", kase, ans);
         printf("Case #%d: %d\n", kase, ans);
     }
     return 0;
