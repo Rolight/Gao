@@ -72,7 +72,7 @@ class Solution {
             }
         }
 
-        for (int i = 0; i < edges.size(); i += 2) {
+        for (int i = 0; i < edges.size() * 2; i += 2) {
             // printf("%d cover %d\n", i, edge_cover[i]);
             ans += min(w[i], edge_cover[i] + edge_cover[i ^ 1]);
         }
